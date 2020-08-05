@@ -1,5 +1,6 @@
 import re
-import time
+# import time
+import datetime
 
 def to_list(file):
   f = open(file, 'rt', encoding = 'UTF-8')
@@ -7,13 +8,15 @@ def to_list(file):
   return lines
 
 w_punct = to_list('broadcast_w_punct.txt')
+backup = w_punct
 
 f = open('SubtTV_2017_01_03_pcm.list.trn', 'rt', encoding = 'UTF-8')
 new_f = open('SubtTV_2017_01_03_pcm.list.punct.trn', 'wt', encoding = 'UTF-8')
 not_found = open('SubtTV_2017_not_found', 'wt', encoding = 'UTF-8')
 
+print(datetime.datetime.now())
 while True:
-  counter = time.time()
+  # counter = time.time()
 
   line = f.readline()
   if not line : break
@@ -41,9 +44,10 @@ while True:
       else:
         new_f.write(file_name + ' :: ' + cmp_txt[start:end] + '\n')
       flag = False
-      print('done : ', time.time() - counter)
+      # print('done : ', time.time() - counter)
       w_punct = w_punct[w_punct.index(cmp_line)+1:]
       break
   if flag:
     not_found.write(line)
-    print('fail : ', time.time() - counter)
+    w_punct = backup
+    # print('fail : ', time.time() - counter)
