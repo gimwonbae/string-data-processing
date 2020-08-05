@@ -1,0 +1,7 @@
+f = open('broadcast_w_punct.txt', 'rt', encoding = 'UTF-8')
+new_f = open('broadcast_w_punct_u.txt', 'wt', encoding = 'UTF-8')
+l = f.readlines()
+s = set(l)
+l = list(s)
+l.sort(key=len)
+new_f.writelines(l)
