@@ -15,26 +15,29 @@ def to_dict(items):
     grouper[len(item_sub)].append(item)
   return grouper
 
-w_punct = to_list('broadcast_w_punct_u.txt')
+w_punct = to_list('C:\\Project\\20200804.-방송DB후처리\\broadcast_w_punct_u.txt')
 w_punct_dict = to_dict(w_punct)
 # print(w_punct_dict)
 
-f = open('SubtTV_2017_01_03_pcm.list.trn', 'rt', encoding = 'UTF-8')
-new_f = open('SubtTV_2017_01_03_pcm.list.punct.trn', 'wt', encoding = 'UTF-8')
-not_found = open('SubtTV_2017_not_found', 'wt', encoding = 'UTF-8')
+f = open('C:\\Project\\20200804.-방송DB후처리\\SubtTV_2017_01_03_pcm.list.trn', 'rt', encoding = 'UTF-8')
+new_f = open('C:\\Project\\20200804.-방송DB후처리\\SubtTV_2017_01_03_pcm.list.punct.trn', 'wt', encoding = 'UTF-8')
+not_found = open('C:\\Project\\20200804.-방송DB후처리\\SubtTV_2017_not_found.trn', 'wt', encoding = 'UTF-8')
 
 print(datetime.datetime.now())
 while True:
   # counter = time.time()
 
   line = f.readline()
-  if not line : break
+  if not line : 
+    break
 
   file_name = line.split(' :: ')[0]
   org_txt = line.split(' :: ')[1][:-1]
   
   org_txt_sub = re.sub('[ ]', '', org_txt)
+  
   cmp_len = len(org_txt_sub)
+  point = cmp_len + 5
 
   first_word = org_txt.split(' ')[0]
   second_word = org_txt.split(' ')[-1]
@@ -42,10 +45,11 @@ while True:
   flag = True
   while flag:
     cmp_list = w_punct_dict[cmp_len]
-    if not cmp_list:
+    if (not cmp_list) or (cmp_len > point):
       # print('fail : ', time.time() - counter)
       not_found.write(line)
       flag = False
+      break
     for cmp_line in cmp_list:
       cmp_txt = cmp_line[:-1]
       cmp_txt_sub = re.sub('[,.?!~ ]', '', cmp_txt)
