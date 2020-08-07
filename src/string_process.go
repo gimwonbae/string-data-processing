@@ -104,6 +104,12 @@ func run(fileNumber int) {
 	}
 	defer f.Close()
 
+	errFound, err := os.OpenFile(`C:\Project\20200804.-방송DB후처리\SubtTV_2017_err_found_`+strconv.Itoa(fileNumber)+`.trn`, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+
 	var line string
 	scanner := bufio.NewScanner(f)
 	// i := 0
@@ -132,9 +138,9 @@ Loop:
 		lastWord := splitOrgTxt[len(splitOrgTxt)-1]
 		wordCount := len(splitOrgTxt)
 		defer func() {
-			s := recover()
-			fmt.Println(s)
-			fmt.Println(line)
+			recover()
+			s := line
+			errFound.WriteString(s)
 		}()
 		for _, mapIndex := range keys[keyIndex:] {
 			cmpList := wPunctMap[mapIndex]
