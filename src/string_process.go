@@ -6,27 +6,30 @@ import (
 	"os"
 	"regexp"
 	"runtime"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
 )
 
-const (
-	maxInt = int(^uint(0) >> 1)
-	minInt = -maxInt - 1
-)
-
-func max(numbers map[int][]string) int {
-	var maxNumber int
-	for maxNumber = range numbers {
-		break
-	}
-	for n := range numbers {
-		if n > maxNumber {
-			maxNumber = n
+func MakeSubMap(entireMap map[int][]string, size int) map[int][]string {
+	var subMap map[int][]string
+	subMap = make(map[int][]string)
+	for k, v := range entireMap {
+		if k >= size {
+			subMap[k] = v
 		}
 	}
-	return maxNumber
+	return subMap
+}
+
+func SearchKeyIndex(keys []int, size int) int {
+	for i, key := range keys {
+		if key >= size {
+			return i
+		}
+	}
+	return len(keys) - 1
 }
 
 func ToSlice(path string) []string {
@@ -63,29 +66,14 @@ func ToMap(lines []string) map[int][]string {
 	return lenMap
 }
 
-func FileOpen(path string) *os.File {
-	f, err := os.Open(path)
-	if err != nil {
-		panic(err)
-	}
-
-	defer func() {
-		if err := f.Close(); err != nil {
-			panic(err)
-		}
-	}()
-
-	return f
-}
-
 func run(fileNumber int) {
 	wPunct := ToSlice(`C:\Project\20200804.-방송DB후처리\broadcast_2017_01_03.captions_u.txt`)
 	wPunctMap := ToMap(wPunct)
-	// keys := make([]int, 0, len(wPunctMap))
-	// for k := range wPunctMap {
-	// 	keys = append(keys, k)
-	// }
-	// sort.Ints(keys)
+	keys := make([]int, 0, len(wPunctMap))
+	for k := range wPunctMap {
+		keys = append(keys, k)
+	}
+	sort.Ints(keys)
 	// fmt.Print(keys)
 	// sort.Sort(sort.IntSlice(keys))
 	// fmt.Println("max:", max(wPunctMap))
@@ -119,7 +107,9 @@ func run(fileNumber int) {
 	var line string
 	scanner := bufio.NewScanner(f)
 	// i := 0
-	fmt.Print("start")
+	var re = regexp.MustCompile("[,.?! ~\n]")
+	fmt.Println("start")
+Loop:
 	for scanner.Scan() {
 		// i++
 		// if i > 10 {
@@ -133,28 +123,21 @@ func run(fileNumber int) {
 		orgTxtSub := strings.ReplaceAll(orgTxt, " ", "")
 
 		cmpLen := len(orgTxtSub)
+		keyIndex := SearchKeyIndex(keys, cmpLen)
 		// point := cmpLen + 20
+		// subMap := MakeSubMap(wPunctMap, cmpLen)
 
 		splitOrgTxt := strings.Split(orgTxt, " ")
 		firstWord := splitOrgTxt[0]
 		lastWord := splitOrgTxt[len(splitOrgTxt)-1]
 		wordCount := len(splitOrgTxt)
-
-		flag := true
-
-		for flag {
-			cmpList, exists := wPunctMap[cmpLen]
-			if !exists {
-				if cmpLen > 1000 {
-					s := line + "\n"
-					notFound.WriteString(s)
-					flag = false
-					break
-				}
-				cmpLen++
-				continue
-			}
-			var re = regexp.MustCompile("[,.?! ~\n]")
+		defer func() {
+			s := recover()
+			fmt.Println(s)
+			fmt.Println(line)
+		}()
+		for _, mapIndex := range keys[keyIndex:] {
+			cmpList := wPunctMap[mapIndex]
 			for _, cmpTxt := range cmpList {
 				cmpTxtSub := re.ReplaceAllString(cmpTxt, "")
 				if strings.Contains(cmpTxtSub, orgTxtSub) {
@@ -189,25 +172,27 @@ func run(fileNumber int) {
 							newF.WriteString(s)
 							// ioutil.WriteFile(`C:\Project\20200804.-방송DB후처리\SubtTV_2017_01_03_pcm.list.punct.trn`, []byte(s), 0644)
 						}
-						// elapsedTime := time.Since(startTime)
-						// fmt.Printf("done: %s\n", elapsedTime)
 					}
-					flag = false
-					break
+					goto Loop
 				}
 			}
-			cmpLen++
 		}
+		s := line + "\n"
+		notFound.WriteString(s)
 	}
 }
 
 func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	var wg sync.WaitGroup
-	wg.Add(4)
+	wg.Add(7)
 	go run(1)
 	go run(2)
 	go run(3)
 	go run(4)
+	go run(5)
+	go run(6)
+	go run(7)
+	go run(8)
 	wg.Wait()
 }
