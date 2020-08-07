@@ -5,7 +5,10 @@ import (
 	"fmt"
 	"os"
 	"regexp"
+	"runtime"
+	"strconv"
 	"strings"
+	"sync"
 )
 
 const (
@@ -75,7 +78,7 @@ func FileOpen(path string) *os.File {
 	return f
 }
 
-func main() {
+func run(fileNumber int) {
 	wPunct := ToSlice(`C:\Project\20200804.-방송DB후처리\broadcast_2017_01_03.captions_u.txt`)
 	wPunctMap := ToMap(wPunct)
 	// keys := make([]int, 0, len(wPunctMap))
@@ -95,19 +98,19 @@ func main() {
 	// 	}
 	// }
 	// fmt.Print(wPunctMap[8649])
-	f, err := os.Open(`C:\Project\20200804.-방송DB후처리\SubtTV_2017_01_03_pcm.list.trn`)
+	f, err := os.Open(`C:\Project\20200804.-방송DB후처리\SubtTV_2017_01_03_pcm.list_` + strconv.Itoa(fileNumber) + `.trn`)
 	if err != nil {
 		panic(err)
 	}
 	defer f.Close()
 
-	newF, err := os.OpenFile(`C:\Project\20200804.-방송DB후처리\SubtTV_2017_01_03_pcm.list.punct.trn`, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	newF, err := os.OpenFile(`C:\Project\20200804.-방송DB후처리\SubtTV_2017_01_03_pcm.list.punct_`+strconv.Itoa(fileNumber)+`.trn`, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		panic(err)
 	}
 	defer f.Close()
 
-	notFound, err := os.OpenFile(`C:\Project\20200804.-방송DB후처리\SubtTV_2017_not_found.trn`, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	notFound, err := os.OpenFile(`C:\Project\20200804.-방송DB후처리\SubtTV_2017_not_found_`+strconv.Itoa(fileNumber)+`.trn`, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		panic(err)
 	}
@@ -196,4 +199,15 @@ func main() {
 			cmpLen++
 		}
 	}
+}
+
+func main() {
+	runtime.GOMAXPROCS(runtime.NumCPU())
+	var wg sync.WaitGroup
+	wg.Add(4)
+	go run(1)
+	go run(2)
+	go run(3)
+	go run(4)
+	wg.Wait()
 }
