@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	"fmt"
 	"os"
 	"regexp"
 	"strings"
@@ -66,29 +65,27 @@ func main() {
 	}
 	defer f.Close()
 
-	newF, err := os.Create(`C:\Project\20200804.-방송DB후처리\SubtTV_2017_01_03_pcm.list.punct.trn`)
+	newF, err := os.OpenFile(`C:\Project\20200804.-방송DB후처리\SubtTV_2017_01_03_pcm.list.punct.trn`, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		panic(err)
 	}
 	defer f.Close()
-	newFw := bufio.NewWriter(newF)
 
-	notFound, err := os.Create(`C:\Project\20200804.-방송DB후처리\SubtTV_2017_not_found.trn`)
+	notFound, err := os.OpenFile(`C:\Project\20200804.-방송DB후처리\SubtTV_2017_not_found.trn`, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		panic(err)
 	}
 	defer f.Close()
-	notFoundw := bufio.NewWriter(notFound)
 
 	var line string
 	scanner := bufio.NewScanner(f)
-	i := 0
+	// i := 0
 
 	for scanner.Scan() {
-		i++
-		if i > 10 {
-			break
-		}
+		// i++
+		// if i > 10 {
+		// 	break
+		// }
 		// startTime := time.Now()
 
 		line = scanner.Text()
@@ -109,8 +106,9 @@ func main() {
 			cmpList, exists := wPunctMap[cmpLen]
 			if !exists {
 				if cmpLen > point {
-					fmt.Fprint(notFoundw, string(line+"\n"))
-					fmt.Print(line + "\n")
+					s := line + "\n"
+					// ioutil.WriteFile(`C:\Project\20200804.-방송DB후처리\SubtTV_2017_not_found.trn`, []byte(s), 0644)
+					notFound.WriteString(s)
 					flag = false
 					// elapsedTime := time.Since(startTime)
 					// fmt.Printf("fail: %s\n", elapsedTime)
@@ -121,8 +119,9 @@ func main() {
 				}
 			}
 			if cmpLen > point {
-				fmt.Fprint(notFoundw, string(line+"\n"))
-				fmt.Print(line + "\n")
+				s := line + "\n"
+				// ioutil.WriteFile(`C:\Project\20200804.-방송DB후처리\SubtTV_2017_not_found.trn`, []byte(s), 0644)
+				notFound.WriteString(s)
 				flag = false
 				// elapsedTime := time.Since(startTime)
 				// fmt.Printf("fail: %s\n", elapsedTime)
@@ -137,12 +136,14 @@ func main() {
 					check = check + start + len(firstWord)
 					end := strings.Index(cmpTxt[check+len(lastWord):], " ")
 					if end == -1 {
-						fmt.Print(fileName + " :: " + cmpTxt[start:] + "\n")
-						fmt.Fprint(newFw, string(fileName+" :: "+cmpTxt[start:]+"\n"))
+						s := fileName + " :: " + cmpTxt[start:] + "\n"
+						newF.WriteString(s)
+						// ioutil.WriteFile(`C:\Project\20200804.-방송DB후처리\SubtTV_2017_01_03_pcm.list.punct.trn`, []byte(s), 0644)
 					} else {
 						end = end + check + len(lastWord)
-						fmt.Print(fileName + " :: " + cmpTxt[start:end] + "\n")
-						fmt.Fprint(newFw, string(fileName+" :: "+cmpTxt[start:end]+"\n"))
+						s := fileName + " :: " + cmpTxt[start:end] + "\n"
+						newF.WriteString(s)
+						// ioutil.WriteFile(`C:\Project\20200804.-방송DB후처리\SubtTV_2017_01_03_pcm.list.punct.trn`, []byte(s), 0644)
 					}
 					flag = false
 
