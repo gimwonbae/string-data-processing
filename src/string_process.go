@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"fmt"
 	"os"
 	"regexp"
 	"strings"
@@ -70,24 +71,33 @@ func main() {
 		panic(err)
 	}
 	defer f.Close()
+	newFw := bufio.NewWriter(newF)
 
 	notFound, err := os.Create(`C:\Project\20200804.-방송DB후처리\SubtTV_2017_not_found.trn`)
 	if err != nil {
 		panic(err)
 	}
 	defer f.Close()
+	notFoundw := bufio.NewWriter(notFound)
 
 	var line string
 	scanner := bufio.NewScanner(f)
+	i := 0
 
 	for scanner.Scan() {
+		i++
+		if i > 10 {
+			break
+		}
+		// startTime := time.Now()
+
 		line = scanner.Text()
 		fileName := strings.Split(line, " :: ")[0]
 		orgTxt := strings.Split(line, " :: ")[1]
 		orgTxtSub := strings.ReplaceAll(orgTxt, " ", "")
 
 		cmpLen := len(orgTxtSub)
-		point := cmpLen + 5
+		point := cmpLen + 15
 
 		splitOrgTxt := strings.Split(orgTxt, " ")
 		firstWord := splitOrgTxt[0]
@@ -97,9 +107,25 @@ func main() {
 
 		for flag {
 			cmpList, exists := wPunctMap[cmpLen]
-			if !exists || cmpLen > point {
-
+			if !exists {
+				if cmpLen > point {
+					fmt.Fprint(notFoundw, string(line+"\n"))
+					fmt.Print(line + "\n")
+					flag = false
+					// elapsedTime := time.Since(startTime)
+					// fmt.Printf("fail: %s\n", elapsedTime)
+					break
+				} else {
+					cmpLen++
+					continue
+				}
+			}
+			if cmpLen > point {
+				fmt.Fprint(notFoundw, string(line+"\n"))
+				fmt.Print(line + "\n")
 				flag = false
+				// elapsedTime := time.Since(startTime)
+				// fmt.Printf("fail: %s\n", elapsedTime)
 				break
 			}
 			var re = regexp.MustCompile("[,.?! ~\n]")
@@ -111,11 +137,17 @@ func main() {
 					check = check + start + len(firstWord)
 					end := strings.Index(cmpTxt[check+len(lastWord):], " ")
 					if end == -1 {
-
+						fmt.Print(fileName + " :: " + cmpTxt[start:] + "\n")
+						fmt.Fprint(newFw, string(fileName+" :: "+cmpTxt[start:]+"\n"))
 					} else {
 						end = end + check + len(lastWord)
+						fmt.Print(fileName + " :: " + cmpTxt[start:end] + "\n")
+						fmt.Fprint(newFw, string(fileName+" :: "+cmpTxt[start:end]+"\n"))
 					}
 					flag = false
+
+					// elapsedTime := time.Since(startTime)
+					// fmt.Printf("done: %s\n", elapsedTime)
 					break
 				}
 			}
