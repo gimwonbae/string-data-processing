@@ -8,6 +8,24 @@ import (
 	"strings"
 )
 
+const (
+	maxInt = int(^uint(0) >> 1)
+	minInt = -maxInt - 1
+)
+
+func max(numbers map[int][]string) int {
+	var maxNumber int
+	for maxNumber = range numbers {
+		break
+	}
+	for n := range numbers {
+		if n > maxNumber {
+			maxNumber = n
+		}
+	}
+	return maxNumber
+}
+
 func ToSlice(path string) []string {
 	f, err := os.Open(path)
 	if err != nil {
@@ -58,8 +76,25 @@ func FileOpen(path string) *os.File {
 }
 
 func main() {
-	wPunct := ToSlice(`C:\Project\20200804.-방송DB후처리\broadcast_w_punct_u.txt`)
+	wPunct := ToSlice(`C:\Project\20200804.-방송DB후처리\broadcast_2017_01_03.captions_u.txt`)
 	wPunctMap := ToMap(wPunct)
+	// keys := make([]int, 0, len(wPunctMap))
+	// for k := range wPunctMap {
+	// 	keys = append(keys, k)
+	// }
+	// sort.Ints(keys)
+	// fmt.Print(keys)
+	// sort.Sort(sort.IntSlice(keys))
+	// fmt.Println("max:", max(wPunctMap))
+	// for i, k := range keys {
+	// 	if i == 0 {
+	// 		continue
+	// 	}
+	// 	if keys[i-1]+1 != k {
+	// 		fmt.Print(k, " , ")
+	// 	}
+	// }
+	// fmt.Print(wPunctMap[8649])
 	f, err := os.Open(`C:\Project\20200804.-방송DB후처리\SubtTV_2017_01_03_pcm.list.trn`)
 	if err != nil {
 		panic(err)
@@ -95,67 +130,66 @@ func main() {
 		orgTxtSub := strings.ReplaceAll(orgTxt, " ", "")
 
 		cmpLen := len(orgTxtSub)
-		point := cmpLen + 20
+		// point := cmpLen + 20
 
 		splitOrgTxt := strings.Split(orgTxt, " ")
 		firstWord := splitOrgTxt[0]
 		lastWord := splitOrgTxt[len(splitOrgTxt)-1]
+		wordCount := len(splitOrgTxt)
 
 		flag := true
 
 		for flag {
 			cmpList, exists := wPunctMap[cmpLen]
 			if !exists {
-				if cmpLen > point {
+				if cmpLen > 1000 {
 					s := line + "\n"
-					// ioutil.WriteFile(`C:\Project\20200804.-방송DB후처리\SubtTV_2017_not_found.trn`, []byte(s), 0644)
 					notFound.WriteString(s)
 					flag = false
-					// elapsedTime := time.Since(startTime)
-					// fmt.Printf("fail: %s\n", elapsedTime)
 					break
-				} else {
-					cmpLen++
-					continue
 				}
-			}
-			if cmpLen > point {
-				s := line + "\n"
-				// ioutil.WriteFile(`C:\Project\20200804.-방송DB후처리\SubtTV_2017_not_found.trn`, []byte(s), 0644)
-				notFound.WriteString(s)
-				flag = false
-				// elapsedTime := time.Since(startTime)
-				// fmt.Printf("fail: %s\n", elapsedTime)
-				break
+				cmpLen++
+				continue
 			}
 			var re = regexp.MustCompile("[,.?! ~\n]")
 			for _, cmpTxt := range cmpList {
 				cmpTxtSub := re.ReplaceAllString(cmpTxt, "")
 				if strings.Contains(cmpTxtSub, orgTxtSub) {
-					start := strings.Index(cmpTxt, firstWord)
-					check := strings.Index(cmpTxt[start+len(firstWord):], lastWord)
-					var end int
-					if check == -1 {
-						check = start + len(firstWord)
-						end = strings.Index(cmpTxt[check:], " ")
+					if wordCount == 1 {
+						start := strings.Index(cmpTxt, firstWord)
+						end := strings.Index(cmpTxt[start+len(firstWord):], " ")
+						if end == -1 {
+							s := fileName + " :: " + cmpTxt[start:] + "\n"
+							newF.WriteString(s)
+							// ioutil.WriteFile(`C:\Project\20200804.-방송DB후처리\SubtTV_2017_01_03_pcm.list.punct.trn`, []byte(s), 0644)
+						} else {
+							end = end + start + len(firstWord)
+							s := fileName + " :: " + cmpTxt[start:end] + "\n"
+							newF.WriteString(s)
+							// ioutil.WriteFile(`C:\Project\20200804.-방송DB후처리\SubtTV_2017_01_03_pcm.list.punct.trn`, []byte(s), 0644)
+						}
 					} else {
+						start := strings.Index(cmpTxt, firstWord)
+						check := strings.Index(cmpTxt[start+len(firstWord):], lastWord)
+						var end int
+
 						check = check + start + len(firstWord)
 						end = strings.Index(cmpTxt[check+len(lastWord):], " ")
-					}
-					if end == -1 {
-						s := fileName + " :: " + cmpTxt[start:] + "\n"
-						newF.WriteString(s)
-						// ioutil.WriteFile(`C:\Project\20200804.-방송DB후처리\SubtTV_2017_01_03_pcm.list.punct.trn`, []byte(s), 0644)
-					} else {
-						end = end + check + len(lastWord)
-						s := fileName + " :: " + cmpTxt[start:end] + "\n"
-						newF.WriteString(s)
-						// ioutil.WriteFile(`C:\Project\20200804.-방송DB후처리\SubtTV_2017_01_03_pcm.list.punct.trn`, []byte(s), 0644)
+
+						if end == -1 {
+							s := fileName + " :: " + cmpTxt[start:] + "\n"
+							newF.WriteString(s)
+							// ioutil.WriteFile(`C:\Project\20200804.-방송DB후처리\SubtTV_2017_01_03_pcm.list.punct.trn`, []byte(s), 0644)
+						} else {
+							end = end + check + len(lastWord)
+							s := fileName + " :: " + cmpTxt[start:end] + "\n"
+							newF.WriteString(s)
+							// ioutil.WriteFile(`C:\Project\20200804.-방송DB후처리\SubtTV_2017_01_03_pcm.list.punct.trn`, []byte(s), 0644)
+						}
+						// elapsedTime := time.Since(startTime)
+						// fmt.Printf("done: %s\n", elapsedTime)
 					}
 					flag = false
-
-					// elapsedTime := time.Since(startTime)
-					// fmt.Printf("done: %s\n", elapsedTime)
 					break
 				}
 			}
