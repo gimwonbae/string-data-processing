@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"fmt"
 	"os"
 	"regexp"
 	"strings"
@@ -80,7 +81,7 @@ func main() {
 	var line string
 	scanner := bufio.NewScanner(f)
 	// i := 0
-
+	fmt.Print("start")
 	for scanner.Scan() {
 		// i++
 		// if i > 10 {
@@ -94,7 +95,7 @@ func main() {
 		orgTxtSub := strings.ReplaceAll(orgTxt, " ", "")
 
 		cmpLen := len(orgTxtSub)
-		point := cmpLen + 15
+		point := cmpLen + 20
 
 		splitOrgTxt := strings.Split(orgTxt, " ")
 		firstWord := splitOrgTxt[0]
@@ -133,8 +134,14 @@ func main() {
 				if strings.Contains(cmpTxtSub, orgTxtSub) {
 					start := strings.Index(cmpTxt, firstWord)
 					check := strings.Index(cmpTxt[start+len(firstWord):], lastWord)
-					check = check + start + len(firstWord)
-					end := strings.Index(cmpTxt[check+len(lastWord):], " ")
+					var end int
+					if check == -1 {
+						check = start + len(firstWord)
+						end = strings.Index(cmpTxt[check:], " ")
+					} else {
+						check = check + start + len(firstWord)
+						end = strings.Index(cmpTxt[check+len(lastWord):], " ")
+					}
 					if end == -1 {
 						s := fileName + " :: " + cmpTxt[start:] + "\n"
 						newF.WriteString(s)
@@ -155,12 +162,4 @@ func main() {
 			cmpLen++
 		}
 	}
-
-	// print(f, newF, notFound)
-	// for key, _ := range wPunctMap {
-	// 	println(key)
-	// }
-	// print(wPunctMap[53][0])
-	// print(wPunctMap[40][0])
-	// print(wPunctMap[30])
 }
