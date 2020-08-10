@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"os"
 	"regexp"
@@ -69,6 +70,8 @@ func ToMap(lines []string) map[int][]string {
 func run(fileNumber int) {
 	wPunct := ToSlice(`C:\Project\20200804.-방송DB후처리\broadcast_2017_01_03.captions_u.txt`)
 	wPunctMap := ToMap(wPunct)
+	var b bytes.Buffer
+
 	keys := make([]int, 0, len(wPunctMap))
 	for k := range wPunctMap {
 		keys = append(keys, k)
@@ -139,8 +142,10 @@ Loop:
 		wordCount := len(splitOrgTxt)
 		defer func() {
 			recover()
-			s := line
-			errFound.WriteString(s)
+			b.WriteString(line)
+			b.WriteString("\n")
+			errFound.WriteString(b.String())
+			b.Reset()
 		}()
 		for _, mapIndex := range keys[keyIndex:] {
 			cmpList := wPunctMap[mapIndex]
@@ -151,13 +156,21 @@ Loop:
 						start := strings.Index(cmpTxt, firstWord)
 						end := strings.Index(cmpTxt[start+len(firstWord):], " ")
 						if end == -1 {
-							s := fileName + " :: " + cmpTxt[start:] + "\n"
-							newF.WriteString(s)
+							b.WriteString(fileName)
+							b.WriteString(" :: ")
+							b.WriteString(cmpTxt[start:])
+							b.WriteString("\n")
+							newF.WriteString(b.String())
+							b.Reset()
 							// ioutil.WriteFile(`C:\Project\20200804.-방송DB후처리\SubtTV_2017_01_03_pcm.list.punct.trn`, []byte(s), 0644)
 						} else {
 							end = end + start + len(firstWord)
-							s := fileName + " :: " + cmpTxt[start:end] + "\n"
-							newF.WriteString(s)
+							b.WriteString(fileName)
+							b.WriteString(" :: ")
+							b.WriteString(cmpTxt[start:end])
+							b.WriteString("\n")
+							newF.WriteString(b.String())
+							b.Reset()
 							// ioutil.WriteFile(`C:\Project\20200804.-방송DB후처리\SubtTV_2017_01_03_pcm.list.punct.trn`, []byte(s), 0644)
 						}
 					} else {
@@ -169,13 +182,22 @@ Loop:
 						end = strings.Index(cmpTxt[check+len(lastWord):], " ")
 
 						if end == -1 {
-							s := fileName + " :: " + cmpTxt[start:] + "\n"
-							newF.WriteString(s)
+							end = end + start + len(firstWord)
+							b.WriteString(fileName)
+							b.WriteString(" :: ")
+							b.WriteString(cmpTxt[start:])
+							b.WriteString("\n")
+							newF.WriteString(b.String())
+							b.Reset()
 							// ioutil.WriteFile(`C:\Project\20200804.-방송DB후처리\SubtTV_2017_01_03_pcm.list.punct.trn`, []byte(s), 0644)
 						} else {
 							end = end + check + len(lastWord)
-							s := fileName + " :: " + cmpTxt[start:end] + "\n"
-							newF.WriteString(s)
+							b.WriteString(fileName)
+							b.WriteString(" :: ")
+							b.WriteString(cmpTxt[start:end])
+							b.WriteString("\n")
+							newF.WriteString(b.String())
+							b.Reset()
 							// ioutil.WriteFile(`C:\Project\20200804.-방송DB후처리\SubtTV_2017_01_03_pcm.list.punct.trn`, []byte(s), 0644)
 						}
 					}
@@ -183,22 +205,20 @@ Loop:
 				}
 			}
 		}
-		s := line + "\n"
-		notFound.WriteString(s)
+		b.WriteString(line)
+		b.WriteString("\n")
+		notFound.WriteString(b.String())
+		b.Reset()
 	}
 }
 
 func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	var wg sync.WaitGroup
-	wg.Add(7)
+	wg.Add(4)
 	go run(1)
 	go run(2)
 	go run(3)
 	go run(4)
-	go run(5)
-	go run(6)
-	go run(7)
-	go run(8)
 	wg.Wait()
 }
