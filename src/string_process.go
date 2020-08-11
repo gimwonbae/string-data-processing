@@ -6,11 +6,9 @@ import (
 	"fmt"
 	"os"
 	"regexp"
-	"runtime"
 	"sort"
 	"strconv"
 	"strings"
-	"sync"
 )
 
 func MakeSubMap(entireMap map[int][]string, size int) map[int][]string {
@@ -89,35 +87,30 @@ func run(fileNumber int) {
 	// 	}
 	// }
 	// fmt.Print(wPunctMap[8649])
-	f, err := os.Open(`C:\Project\20200804.-방송DB후처리\SubtTV_2017_01_03_pcm.list_` + strconv.Itoa(fileNumber) + `.trn`)
+	f, err := os.Open(`C:\Project\20200804.-방송DB후처리\SubtTV_2017_01_03_pcm.list_` + strconv.Itoa(fileNumber) + `_1` + `.trn`)
 	if err != nil {
 		panic(err)
 	}
 	defer f.Close()
 
-	newF, err := os.OpenFile(`C:\Project\20200804.-방송DB후처리\SubtTV_2017_01_03_pcm.list.punct_`+strconv.Itoa(fileNumber)+`.trn`, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	newF, err := os.OpenFile(`C:\Project\20200804.-방송DB후처리\SubtTV_2017_01_03_pcm.list.punct_`+strconv.Itoa(fileNumber)+`_1`+`.trn`, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		panic(err)
 	}
-	defer f.Close()
+	defer newF.Close()
 
-	notFound, err := os.OpenFile(`C:\Project\20200804.-방송DB후처리\SubtTV_2017_not_found_`+strconv.Itoa(fileNumber)+`.trn`, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	notFound, err := os.OpenFile(`C:\Project\20200804.-방송DB후처리\SubtTV_2017_not_found_`+strconv.Itoa(fileNumber)+`_1`+`.trn`, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		panic(err)
 	}
-	defer f.Close()
-
-	errFound, err := os.OpenFile(`C:\Project\20200804.-방송DB후처리\SubtTV_2017_err_found_`+strconv.Itoa(fileNumber)+`.trn`, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		panic(err)
-	}
-	defer f.Close()
+	defer notFound.Close()
 
 	var line string
 	scanner := bufio.NewScanner(f)
 	// i := 0
 	var re = regexp.MustCompile("[,.?! ~\n]")
-	fmt.Println("start")
+	fmt.Print("start ")
+	fmt.Println(fileNumber)
 Loop:
 	for scanner.Scan() {
 		// i++
@@ -140,20 +133,20 @@ Loop:
 		firstWord := splitOrgTxt[0]
 		lastWord := splitOrgTxt[len(splitOrgTxt)-1]
 		wordCount := len(splitOrgTxt)
-		defer func() {
-			recover()
-			b.WriteString(line)
-			b.WriteString("\n")
-			errFound.WriteString(b.String())
-			b.Reset()
-		}()
 		for _, mapIndex := range keys[keyIndex:] {
 			cmpList := wPunctMap[mapIndex]
 			for _, cmpTxt := range cmpList {
 				cmpTxtSub := re.ReplaceAllString(cmpTxt, "")
 				if strings.Contains(cmpTxtSub, orgTxtSub) {
+					start := strings.Index(cmpTxt, firstWord)
+					if start == -1 {
+						b.WriteString(line)
+						b.WriteString("\n")
+						notFound.WriteString(b.String())
+						b.Reset()
+						goto Loop
+					}
 					if wordCount == 1 {
-						start := strings.Index(cmpTxt, firstWord)
 						end := strings.Index(cmpTxt[start+len(firstWord):], " ")
 						if end == -1 {
 							b.WriteString(fileName)
@@ -174,7 +167,6 @@ Loop:
 							// ioutil.WriteFile(`C:\Project\20200804.-방송DB후처리\SubtTV_2017_01_03_pcm.list.punct.trn`, []byte(s), 0644)
 						}
 					} else {
-						start := strings.Index(cmpTxt, firstWord)
 						check := strings.Index(cmpTxt[start+len(firstWord):], lastWord)
 						var end int
 
@@ -213,12 +205,16 @@ Loop:
 }
 
 func main() {
-	runtime.GOMAXPROCS(runtime.NumCPU())
-	var wg sync.WaitGroup
-	wg.Add(4)
-	go run(1)
-	go run(2)
-	go run(3)
-	go run(4)
-	wg.Wait()
+	// runtime.GOMAXPROCS(runtime.NumCPU())
+	// var wg sync.WaitGroup
+	// wg.Add(8)
+	// start := 1
+	// for i := start; i <= start+7; i++ {
+	// 	go func(i int) {
+	// 		defer wg.Done()
+	// 		run(i)
+	// 	}(i)
+	// }
+	// wg.Wait()
+	run(12)
 }
