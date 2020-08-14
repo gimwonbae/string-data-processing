@@ -1,0 +1,7 @@
+f = open("C:\\Project\\20200804.-방송DB후처리\\Set\\SubtTV_2017_not_found.trn", 'rt', encoding = 'UTF-8')
+new_f = open('C:\\Project\\20200804.-방송DB후처리\\Set\\SubtTV_2017_not_found_u.trn', 'wt', encoding = 'UTF-8')
+l = f.readlines()
+s = set(l)
+l = list(s)
+# l.sort(key=len)
+new_f.writelines(l)
