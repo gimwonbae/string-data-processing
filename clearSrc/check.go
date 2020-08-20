@@ -214,12 +214,18 @@ func wUnit(checkInput string, orgInput string) {
 
 				b.WriteString(checkLine)
 				b.WriteString("\n")
-
+				// fmt.Println(checkSub)
+				// fmt.Println(orgSub)
+				// fmt.Println(strings.ToLower(checkSub))
+				// fmt.Println(strings.ToLower(orgSub))
+				// fmt.Println(utf8.RuneCountInString(strings.ToLower(checkSub)))
+				// fmt.Println(utf8.RuneCountInString(strings.ToLower(orgSub)))
 				condition := utf8.RuneCountInString(strings.ToLower(checkSub)) - utf8.RuneCountInString(strings.ToLower(orgSub))
-				if condition > 2 || condition < 2 {
-					miss.WriteString(b.String())
-				} else {
+				// fmt.Println(condition)
+				if -2 <= condition && condition <= 2 {
 					match.WriteString(b.String())
+				} else {
+					miss.WriteString(b.String())
 				}
 				b.Reset()
 				orgList = orgList[index+1:]
@@ -230,7 +236,7 @@ func wUnit(checkInput string, orgInput string) {
 }
 
 func main() {
-	match("SubtTV_2017_01_03_pcm.list.trn", `broadcast_text\KOR`)
-	// woUnit(`..\Set\SubtTV_2017_01_03_pcm.list.punct.trn`, `..\Set\SubtTV_2017_01_03_pcm.list.trn`)
-	// wUnit(`..\Set\SubtTV_2017_01_03_pcm.list.punct.trn`, `..\Set\SubtTV_2017_01_03_pcm.list.trn`)
+	// match("SubtTV_2017_01_03_pcm.list.trn", `broadcast_text\KOR`)
+	// woUnit(`wo_unit`, `Set\SubtTV_2017_01_03_pcm.list.trn`)
+	wUnit(`w_unit`, `Set\SubtTV_2017_01_03_pcm.list.trn`)
 }
