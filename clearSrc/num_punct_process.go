@@ -3,11 +3,13 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"flag"
 	"fmt"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
+	"sync"
 	"unicode/utf8"
 )
 
@@ -71,7 +73,7 @@ func match(path string, dirPath string) {
 			b.WriteString("\n")
 			fail.WriteString(b.String())
 			b.Reset()
-			fmt.Println("index")
+			// fmt.Println("index")
 			continue
 		}
 		text := textList[index]
@@ -236,7 +238,29 @@ func wNum(checkInput string, orgInput string) {
 }
 
 func main() {
+	source := flag.String("source", "", "Source File")
+	ref := flag.String("ref", "", "Reference File")
+	goal := flag.String("goal", "", "Matching or Checking")
+
+	flag.Parse()
+	if *goal == "matching" {
+		match(*source, *ref)
+	} else if *goal == "checking" {
+		var wg sync.WaitGroup
+		wg.Add(2)
+		go func() {
+			defer wg.Done()
+			woNum(`wo_num`, *source)
+		}()
+		go func() {
+			defer wg.Done()
+			wNum(`w_num`, *source)
+		}()
+		wg.Wait()
+	} else {
+		fmt.Println("Wrong Usage")
+	}
 	// match("SubtTV_2017_01_03_pcm.list.trn", `broadcast_text\KOR`)
-	// woNum(`wo_num`, `Set\SubtTV_2017_01_03_pcm.list.trn`)
-	wNum(`w_num`, `Set\SubtTV_2017_01_03_pcm.list.trn`)
+	// woNum(`wo_num`, `SubtTV_2017_01_03_pcm.list.trn`)
+	// wNum(`w_num`, `SubtTV_2017_01_03_pcm.list.trn`)
 }
