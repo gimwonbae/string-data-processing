@@ -1,31 +1,35 @@
 #!/bin/bash
 
-#   directory tree
+# directory tree
+:<<END
+Dir
+  -source file
+  -reference directory
+    -JTBC_2017_0101_0000
+      -data
+        -JTBC_2017_0101_0000.tok
+        -JTBC_2017_0101_0000.text
+          ...
+  -SrcDir
+    -run.sh
+    -num_punct_process.go
+    -num_punct_process_windows
+    -num_punct_process_linux
+END
 
-#   Dir
-#     -source file
-#     -reference directory
-#        -JTBC_2017_0101_0000
-#           -data
-#              -JTBC_2017_0101_0000.tok
-#              -JTBC_2017_0101_0000.text
-#                 ...
-#     -SrcDir
-#        -run.sh
-#        -num_punct_process.go
-#        -num_punct_process_windows
-#        -num_punct_process_linux
+#usage
+:<<END
+all files must UTF-8 encoding
+source file path don't contain ../sourceFileName just sourceFileName
+reference directory path don't contain ../ref_dir_path just ref_dir_path
 
-#   usage
+./run.sh (source) (ref) (os) (outputname) 
+os flag = [windows, linux, own(build your os version exec file)]
+source file line format :  (Don't care)/(Don't care)/(Don't care)/(Don't care)/JTBC_2017_0101_0000/JTBC_2017_0101_0000_999_000.pcm :: blah blah
+END
 
-# all files must UTF-8 encoding
-# source file path don't contain ../sourceFileName just sourceFileName
-# reference directory path don't contain ../ref_dir_path just ref_dir_path
 
-# ./run.sh (source) (ref) (os) (outputname) 
-# os flag = windows, linux, own(build your os version exec file)
-
-#source file format :  (Don't care)/(Don't care)/(Don't care)/(Don't care)/JTBC_2017_0101_0000/JTBC_2017_0101_0000_999_000.pcm :: blah blah
+####start###
 
 if [ $# -ne 4 ]; then
   echo "./run.sh (source) (ref) (os) (outputname)"
@@ -38,10 +42,28 @@ os=${3}
 output=${4}
 
 # for remove empty line
+
+:<<END
 echo $(date) "remove empty line ${source}"
 awk 'NF > 0' ../${source} > ../${source}_t
 cat ../${source}_t > ../${source}
 rm ../${source}_t
+END
+
+# for change to utf-8
+:<<END
+target="*.tok"
+org="euc-kr"
+chg="utf-8"
+
+list=`find . -name ${target}`
+for filename in ${list}
+do
+  iconv -c -f ${org} -t ${chg} ${filename} > ${filename}_t
+  cat ${filename}_t > ${filename}
+  rm ${filename}_t 
+done
+END
 
 sourceLine=$(cat ../${source} | wc -l)
 
@@ -70,24 +92,29 @@ else
   exit
 fi
 
-#   for file merge
+#for file merge
 echo $(date) "file merge ${output}.."
 cat ../${output}_match_w_num > ../${output}_match; cat ../${output}_match_wo_num >> ../${output}_match 
 
-#   if you want miss file
-#cat ../miss_w_num > ../miss; cat ../miss_wo_num >> ../miss
+#if you want miss file
+:<<END
+cat ../miss_w_num > ../miss; cat ../miss_wo_num >> ../miss
+END
 
 #   for file sort
 echo $(date) "file sort ${output} .."
 cat ../${output}_match | sort -k 1 > ../${output}
 
-#   if you want sort miss file
-#cat ../miss | sort -k 1 > ../miss_s
+#if you want sort miss file
+:<<END
+cat ../miss | sort -k 1 > ../miss_s
+END
 
-#   for removing log files
-
-# echo $(date) "remove log files ${output} .."
-# rm ../${output}_*
+#for removing log files
+:<<END
+echo $(date) "remove log files ${output} .."
+rm ../${output}_*
+END
 
 successLine=$(cat ../${output} | wc -l)
 let per=successLine\*100/sourceLine
