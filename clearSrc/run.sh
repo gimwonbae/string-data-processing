@@ -25,6 +25,7 @@ reference directory path don't contain ../ref_dir_path just ref_dir_path
 
 ./run.sh (source) (ref) (os) (outputname) 
 os flag = [windows, linux, own(build your os version exec file)]
+os flag : own => it needs golang env.
 source file line format :  (Don't care)/(Don't care)/(Don't care)/(Don't care)/JTBC_2017_0101_0000/JTBC_2017_0101_0000_999_000.pcm :: blah blah
 END
 
