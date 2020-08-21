@@ -37,6 +37,12 @@ ref=${2}
 os=${3}
 output=${4}
 
+# for remove empty line
+echo $(date) "remove empty line ${source}"
+awk 'NF > 0' ../${source} > ../${source}_t
+cat ../${source}_t > ../${source}
+rm ../${source}_t
+
 sourceLine=$(cat ../${source} | wc -l)
 
 if [ ${os} == "windows" ]; then
