@@ -9,6 +9,7 @@
 #           -data
 #              -JTBC_2017_0101_0000.tok
 #              -JTBC_2017_0101_0000.text
+#                 ...
 #     -SrcDir
 #        -run.sh
 #        -num_punct_process.go
@@ -22,11 +23,12 @@
 # reference directory path don't contain ../ref_dir_path just ref_dir_path
 
 # ./run.sh (source) (ref) (os) (outputname) 
+# os flag = windows, linux, own(build your os version exec file)
 
-#source file format :       SubtTV_Database/2017/03/JTBC/JTBC_2017_0101_0000/JTBC_2017_0101_0000_999_000.pcm :: blah blah
+#source file format :  (Don't care)/(Don't care)/(Don't care)/(Don't care)/JTBC_2017_0101_0000/JTBC_2017_0101_0000_999_000.pcm :: blah blah
 
 if [ $# -ne 4 ]; then
-  echo "Wrong Usage"
+  echo "./run.sh (source) (ref) (os) (outputname)"
   exit
 fi
 
@@ -38,10 +40,10 @@ output=${4}
 sourceLine=$(cat ../${source} | wc -l)
 
 if [ ${os} == "windows" ]; then
-  #   for matching
+    # for matching
   echo $(date) "matching start" ${output}
   ./num_punct_process_windows -goal matching -source ${source} -ref ${ref} -output ${output}
-  #   for checking
+    # for checking
   echo $(date) "checking start" ${output}
   ./num_punct_process_windows -goal checking -source ${source} -ref ${ref} -output ${output}
 elif [ ${os} == "linux" ]; then
@@ -58,7 +60,7 @@ elif [ ${os} == "own" ]; then
   echo $(date) "checking start" ${output}
   ./num_punct_process -goal checking -source ${source} -ref ${ref} -output ${output}
 else
-  echo "Wrong Usage"
+  echo "Wrong Os flag Usage (windows, linux, own)"
   exit
 fi
 
@@ -71,16 +73,17 @@ cat ../${output}_match_w_num > ../${output}_match; cat ../${output}_match_wo_num
 
 #   for file sort
 echo $(date) "file sort ${output} .."
-cat ../${output}_match | sort -k 1 > ../${output}_success
+cat ../${output}_match | sort -k 1 > ../${output}
 
 #   if you want sort miss file
 #cat ../miss | sort -k 1 > ../miss_s
 
 #   for removing log files
-echo $(date) "remove log files ${output} .."
-rm ../${output}_match* ../${output}_miss* ../${output}_fail ../${output}_w*
 
-successLine=$(cat ../${output}_success | wc -l)
+# echo $(date) "remove log files ${output} .."
+# rm ../${output}_*
+
+successLine=$(cat ../${output} | wc -l)
 let per=successLine/sourceLine\*100
 
 echo "source line :" ${sourceLine}

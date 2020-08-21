@@ -260,11 +260,11 @@ func main() {
 		wg.Add(2)
 		go func() {
 			defer wg.Done()
-			woNum(`wo_num`, *source, *output)
+			woNum(*output+`_wo_num`, *source, *output)
 		}()
 		go func() {
 			defer wg.Done()
-			wNum(`w_num`, *source, *output)
+			wNum(*output+`_w_num`, *source, *output)
 		}()
 		wg.Wait()
 	} else {
