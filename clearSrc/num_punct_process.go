@@ -16,7 +16,7 @@ import (
 func toSlice(path string) []string {
 	f, err := os.Open(path)
 	if err != nil {
-		panic(err)
+		return nil
 	}
 	defer f.Close()
 
@@ -43,11 +43,12 @@ func viewList(line string, path string, fileType string) []string {
 	}
 }
 
-func match(path string, dirPath string) {
+func match(path string, dirPath string, output string) {
 	var b bytes.Buffer
-	wNum, _ := os.OpenFile(filepath.Join(`..`, `w_num`), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	woNum, _ := os.OpenFile(filepath.Join(`..`, `wo_num`), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	fail, _ := os.OpenFile(filepath.Join(`..`, `fail`), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+
+	wNum, _ := os.OpenFile(filepath.Join(`..`, output+`_w_num`), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	woNum, _ := os.OpenFile(filepath.Join(`..`, output+`_wo_num`), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	fail, _ := os.OpenFile(filepath.Join(`..`, output+`_fail`), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 
 	lines := toSlice(filepath.Join(`..`, path))
 	var re = regexp.MustCompile("[^가-힣0-9a-zA-Z]")
@@ -55,6 +56,14 @@ func match(path string, dirPath string) {
 	for _, line := range lines {
 		textList := viewList(line, dirPath, "text")
 		tokList := viewList(line, dirPath, "tok")
+
+		if (textList == nil) || (tokList == nil) {
+			b.WriteString(line)
+			b.WriteString("\n")
+			fail.WriteString(b.String())
+			b.Reset()
+			continue
+		}
 
 		fileName := strings.Split(line, " :: ")[0]
 		lineText := strings.Split(line, " :: ")[1]
@@ -153,13 +162,13 @@ func match(path string, dirPath string) {
 	}
 }
 
-func woNum(checkInput string, orgInput string) {
+func woNum(checkInput string, orgInput string, output string) {
 	var b bytes.Buffer
 	checkList := toSlice(filepath.Join(`..`, checkInput))
 	orgList := toSlice(filepath.Join(`..`, orgInput))
 
-	match, _ := os.OpenFile(filepath.Join(`..`, `match_wo_num`), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	miss, _ := os.OpenFile(filepath.Join(`..`, `miss_wo_num`), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	match, _ := os.OpenFile(filepath.Join(`..`, output+`_match_wo_num`), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	miss, _ := os.OpenFile(filepath.Join(`..`, output+`_miss_wo_num`), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 
 	var re = regexp.MustCompile("[^가-힣0-9a-zA-Z]")
 
@@ -191,13 +200,13 @@ func woNum(checkInput string, orgInput string) {
 	}
 }
 
-func wNum(checkInput string, orgInput string) {
+func wNum(checkInput string, orgInput string, output string) {
 	var b bytes.Buffer
 	checkList := toSlice(filepath.Join(`..`, checkInput))
 	orgList := toSlice(filepath.Join(`..`, orgInput))
 
-	match, _ := os.OpenFile(filepath.Join(`..`, `match_w_num`), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	miss, _ := os.OpenFile(filepath.Join(`..`, `miss_w_num`), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	match, _ := os.OpenFile(filepath.Join(`..`, output+`_match_w_num`), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	miss, _ := os.OpenFile(filepath.Join(`..`, output+`_miss_w_num`), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 
 	var re = regexp.MustCompile("[^가-힣0-9a-zA-Z]")
 
@@ -241,20 +250,21 @@ func main() {
 	source := flag.String("source", "", "Source File")
 	ref := flag.String("ref", "", "Reference File")
 	goal := flag.String("goal", "", "Matching or Checking")
+	output := flag.String("output", "", "Output Filename")
 
 	flag.Parse()
 	if *goal == "matching" {
-		match(*source, *ref)
+		match(*source, *ref, *output)
 	} else if *goal == "checking" {
 		var wg sync.WaitGroup
 		wg.Add(2)
 		go func() {
 			defer wg.Done()
-			woNum(`wo_num`, *source)
+			woNum(`wo_num`, *source, *output)
 		}()
 		go func() {
 			defer wg.Done()
-			wNum(`w_num`, *source)
+			wNum(`w_num`, *source, *output)
 		}()
 		wg.Wait()
 	} else {
