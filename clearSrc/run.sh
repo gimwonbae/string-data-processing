@@ -84,7 +84,7 @@ cat ../${output}_match | sort -k 1 > ../${output}
 # rm ../${output}_*
 
 successLine=$(cat ../${output} | wc -l)
-let per=successLine/sourceLine\*100
+let per=successLine\*100/sourceLine
 
 echo "source line :" ${sourceLine}
 echo "success line :" ${successLine}
