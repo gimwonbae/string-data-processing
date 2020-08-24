@@ -20,12 +20,15 @@ END
 #usage
 :<<END
 all files must UTF-8 encoding
+Source file should not have an empty line.
 source file path don't contain ../sourceFileName just sourceFileName
 reference directory path don't contain ../ref_dir_path just ref_dir_path
 
 ./run.sh (source) (ref) (os) (outputname) 
-os flag = [windows, linux, own(build your os version exec file)]
-os flag : own => it needs golang env.
+ex) ./run.sh SubtTV_2017_01_03_pcm.list.trn broadcast_text/KOR windows 20170103
+
+os flag = [windows, linux, build(build your os version exec file)]
+os flag : build => it needs golang env.
 source file line format :  (Don't care)/(Don't care)/(Don't care)/(Don't care)/JTBC_2017_0101_0000/JTBC_2017_0101_0000_999_000.pcm :: blah blah
 END
 
@@ -57,7 +60,7 @@ target="*.tok"
 org="euc-kr"
 chg="utf-8"
 
-list=`find . -name ${target}`
+list=`find . -name "${target}"`
 for filename in ${list}
 do
   iconv -c -f ${org} -t ${chg} ${filename} > ${filename}_t
@@ -80,7 +83,7 @@ elif [ ${os} == "linux" ]; then
   ./num_punct_process_linuxs -goal matching -source ${source} -ref ${ref} -output ${output}
   echo $(date) "checking start" ${output}
   ./num_punct_process_linuxs -goal checking -source ${source} -ref ${ref} -output ${output}
-elif [ ${os} == "own" ]; then
+elif [ ${os} == "build" ]; then
   #   It needs golang env.
   echo "build golang exec file"
   go build -o num_punct_process num_punct_process.go 
@@ -89,7 +92,7 @@ elif [ ${os} == "own" ]; then
   echo $(date) "checking start" ${output}
   ./num_punct_process -goal checking -source ${source} -ref ${ref} -output ${output}
 else
-  echo "Wrong Os flag Usage (windows, linux, own)"
+  echo "Wrong Os flag Usage -windows, linux, build"
   exit
 fi
 
