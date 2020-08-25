@@ -127,5 +127,5 @@ rm ../${output}_*
 END
 
 echo "source line :" ${sourceLine}
-echo "success line :" ${successLine}
+echo "matching line :" ${successLine}
 echo "Processing Rate :" ${per} "%"
