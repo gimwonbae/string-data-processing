@@ -196,14 +196,10 @@ func woNum(checkInput string, orgInput string, output string) {
 					match.WriteString(b.String())
 				}
 				b.Reset()
-				orgList = orgList[index-1:]
+				orgList = orgList[index:]
 				break
 			}
 		}
-		b.WriteString(checkLine)
-		b.WriteString("\n")
-		miss.WriteString(b.String())
-		b.Reset()
 	}
 }
 
@@ -247,14 +243,10 @@ func wNum(checkInput string, orgInput string, output string) {
 					miss.WriteString(b.String())
 				}
 				b.Reset()
-				orgList = orgList[index-1:]
+				orgList = orgList[index:]
 				break
 			}
 		}
-		b.WriteString(checkLine)
-		b.WriteString("\n")
-		miss.WriteString(b.String())
-		b.Reset()
 	}
 }
 

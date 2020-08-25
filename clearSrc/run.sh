@@ -101,11 +101,9 @@ echo $(date) "file merge ${output}.."
 cat ../${output}_match_w_num > ../${output}_match; cat ../${output}_match_wo_num >> ../${output}_match 
 
 #if you want miss file
-# :<<END
-cat ../${output}_miss_w_num > ../miss; cat ../${output}_miss_wo_num >> ../${output}_miss
-# END
+cat ../${output}_miss_w_num > ../${output}_miss; cat ../${output}_miss_wo_num >> ../${output}_miss
 
-cat ../${output}_miss > ${output}_merge; ../${output}_match >> ${output}_merge; ../${output}_fail >> ${output}_merge
+cat ../${output}_miss > ../${output}_merge; ../${output}_match >> ../${output}_merge; ../${output}_fail >> ../${output}_merge
 
 
 #   for file sort
