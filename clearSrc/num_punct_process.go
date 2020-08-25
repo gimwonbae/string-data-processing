@@ -111,6 +111,7 @@ func match(path string, dirPath string, output string) {
 				} else {
 					woNum.WriteString(b.String())
 				}
+				b.Reset()
 				continue
 			} else {
 				end = end + start + len(lastWord)
@@ -122,6 +123,7 @@ func match(path string, dirPath string, output string) {
 				} else {
 					woNum.WriteString(b.String())
 				}
+				b.Reset()
 				continue
 			}
 		}
@@ -184,19 +186,24 @@ func woNum(checkInput string, orgInput string, output string) {
 			if orgFile == checkFile {
 				orgText := orgLineSplit[1]
 				orgSub := re.ReplaceAllString(orgText, "")
-
-				b.WriteString(checkLine)
-				b.WriteString("\n")
 				if strings.ToLower(checkSub) != strings.ToLower(orgSub) {
+					b.WriteString(orgLine)
+					b.WriteString("\n")
 					miss.WriteString(b.String())
 				} else {
+					b.WriteString(checkLine)
+					b.WriteString("\n")
 					match.WriteString(b.String())
 				}
 				b.Reset()
-				orgList = orgList[index+1:]
+				orgList = orgList[index-1:]
 				break
 			}
 		}
+		b.WriteString(checkLine)
+		b.WriteString("\n")
+		miss.WriteString(b.String())
+		b.Reset()
 	}
 }
 
@@ -222,9 +229,6 @@ func wNum(checkInput string, orgInput string, output string) {
 			if orgFile == checkFile {
 				orgText := orgLineSplit[1]
 				orgSub := re.ReplaceAllString(orgText, "")
-
-				b.WriteString(checkLine)
-				b.WriteString("\n")
 				// fmt.Println(checkSub)
 				// fmt.Println(orgSub)
 				// fmt.Println(strings.ToLower(checkSub))
@@ -234,15 +238,23 @@ func wNum(checkInput string, orgInput string, output string) {
 				condition := utf8.RuneCountInString(strings.ToLower(checkSub)) - utf8.RuneCountInString(strings.ToLower(orgSub))
 				// fmt.Println(condition)
 				if -2 <= condition && condition <= 2 {
+					b.WriteString(checkLine)
+					b.WriteString("\n")
 					match.WriteString(b.String())
 				} else {
+					b.WriteString(orgLine)
+					b.WriteString("\n")
 					miss.WriteString(b.String())
 				}
 				b.Reset()
-				orgList = orgList[index+1:]
+				orgList = orgList[index-1:]
 				break
 			}
 		}
+		b.WriteString(checkLine)
+		b.WriteString("\n")
+		miss.WriteString(b.String())
+		b.Reset()
 	}
 }
 

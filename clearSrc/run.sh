@@ -49,9 +49,9 @@ output=${4}
 
 :<<END
 echo $(date) "remove empty line ${source}"
-awk 'NF > 0' ../${source} > ../${source}_t
-cat ../${source}_t > ../${source}
-rm ../${source}_t
+awk 'NF > 0' ../${source} > ../${source}.emp
+cat ../${source}.emp > ../${source}
+rm ../${source}.emp
 END
 
 # for change to utf-8
@@ -60,12 +60,12 @@ target="*.tok"
 org="euc-kr"
 chg="utf-8"
 
-list=`find . -name "${target}"`
+list=`find ../${ref} -name "${target}"`
 for filename in ${list}
 do
-  iconv -c -f ${org} -t ${chg} ${filename} > ${filename}_t
-  cat ${filename}_t > ${filename}
-  rm ${filename}_t 
+  iconv -c -f ${org} -t ${chg} ${filename} > ${filename}.fix
+  cat ${filename}.fix > ${filename}
+  rm ${filename}.fix
 done
 END
 
@@ -80,9 +80,9 @@ if [ ${os} == "windows" ]; then
   ./num_punct_process_windows -goal checking -source ${source} -ref ${ref} -output ${output}
 elif [ ${os} == "linux" ]; then
   echo $(date) "matching start" ${output}
-  ./num_punct_process_linuxs -goal matching -source ${source} -ref ${ref} -output ${output}
+  ./num_punct_process_linux -goal matching -source ${source} -ref ${ref} -output ${output}
   echo $(date) "checking start" ${output}
-  ./num_punct_process_linuxs -goal checking -source ${source} -ref ${ref} -output ${output}
+  ./num_punct_process_linux -goal checking -source ${source} -ref ${ref} -output ${output}
 elif [ ${os} == "build" ]; then
   #   It needs golang env.
   echo "build golang exec file"
@@ -101,27 +101,30 @@ echo $(date) "file merge ${output}.."
 cat ../${output}_match_w_num > ../${output}_match; cat ../${output}_match_wo_num >> ../${output}_match 
 
 #if you want miss file
-:<<END
-cat ../miss_w_num > ../miss; cat ../miss_wo_num >> ../miss
-END
+# :<<END
+cat ../${output}_miss_w_num > ../miss; cat ../${output}_miss_wo_num >> ../${output}_miss
+# END
+
+cat ../${output}_miss > ${output}_merge; ../${output}_match >> ${output}_merge; ../${output}_fail >> ${output}_merge
+
 
 #   for file sort
 echo $(date) "file sort ${output} .."
-cat ../${output}_match | sort -k 1 > ../${output}
+cat ../${output}_merge | sort -k 1 > ../${output}
 
 #if you want sort miss file
 :<<END
 cat ../miss | sort -k 1 > ../miss_s
 END
 
+successLine=$(cat ../${output}_match | wc -l)
+let per=successLine\*100/sourceLine
+
 #for removing log files
 :<<END
 echo $(date) "remove log files ${output} .."
 rm ../${output}_*
 END
-
-successLine=$(cat ../${output} | wc -l)
-let per=successLine\*100/sourceLine
 
 echo "source line :" ${sourceLine}
 echo "success line :" ${successLine}
